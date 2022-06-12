@@ -1,0 +1,58 @@
+version: '3.8'
+services:
+  mysqldb:
+    container_name: mysql-db
+    image: mysql/mysql-server:8.0.20
+    restart: unless-stopped
+    env_file: ./.env
+    environment:
+      - MYSQL_ROOT_PASSWORD=$DB_PASSWORD
+      - MYSQL_DATABASE=$DB_NAME
+    ports:
+      - $MYSQL_PORT:$MYSQL_PORT
+    volumes:
+      - mysql-volume:/var/lib/mysql
+    networks:
+      - app-network
+  phpmyadmin:
+    container_name: pma
+    depends_on:
+      - mysqldb
+    image: phpmyadmin/phpmyadmin
+    volumes:
+      - phpmyadmin-volume:/etc/phpmyadmin/config.user.inc.php
+    environment:
+      PMA_HOST: mysqldb
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+    ports:
+      - "82:80"
+    links:
+      - mysqldb
+    networks:
+      - app-network
+  backend:
+    container_name: backend-nodejs
+    depends_on:
+      - mysqldb
+    build: 
+      context: ./backend
+      dockerfile: .
+    restart: unless-stopped
+    env_file: ./.env
+    ports:
+      - $PORT:$PORT
+    environment:
+      - DB_USER=$DB_USER
+      - DB_PASSWORD=$DB_PASSWORD
+      - DB_NAME=$DB_NAME
+    networks:
+      - app-network
+volumes: 
+  mysql-volume:
+    external: true
+  phpmyadmin-volume:
+    external: true
+networks:
+  app-network:
+    driver: bridge
