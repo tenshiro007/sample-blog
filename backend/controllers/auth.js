@@ -1,6 +1,10 @@
 const { validationResult } = require("express-validator");
-const database = require("../models/db");
+const database = require("../config/db");
 
+/**
+ * 
+ * sample of how to connect and use directly to mysql database 
+ */
 const initDatabase = (req, res) => {
   const sqlQuery =
     "CREATE TABLE IF NOT EXISTS emails(id int AUTO_INCREMENT, firstname VARCHAR(50), lastname VARCHAR(50), email VARCHAR(50), PRIMARY KEY(id))";
@@ -12,7 +16,7 @@ const initDatabase = (req, res) => {
     })
 };
 
-const getSubscribers = (req, res) => {
+const getAllEmail = (req, res) => {
     const sqlQuery = "SELECT * FROM emails";
 
     database.query(sqlQuery, (err, result) => {
@@ -22,7 +26,7 @@ const getSubscribers = (req, res) => {
     });
 }
 
-const addSubscriber = (req, res) => {
+const register = (req, res) => {
     console.log(req.body);
   const errors = validationResult(req);
 
@@ -44,9 +48,13 @@ const addSubscriber = (req, res) => {
     });
   }
 };
+const login = (req, res) => {
+  res.send('login')
+}
 
 module.exports = {
-    initDatabase,
-    getSubscribers,
-    addSubscriber
-}
+  initDatabase,
+  getAllEmail,
+  register,
+  login,
+};
